@@ -10,7 +10,7 @@ Install JDK 25 and Maven, then run:
 mvn clean package
 ```
 
-Copy `target/Reports.jar` to the server's `plugins/` directory and start Paper once. The plugin creates `plugins/Reports/config.yml` and `reports.db` automatically. Use a current Paper 26.3 build; the Paper API dependency follows Paper's 26.3 build-version range.
+Copy `target/Reports.jar` to the server's `plugins/` directory and start Paper once. Each package build regenerates `moderation/integrity.sha256` and embeds the SHA-256 manifest in the JAR. On startup, the plugin verifies every JAR file entry against that manifest and disables itself if an entry was changed, removed, or added. The manifest cannot hash itself; it is the reference list for the other JAR entries. The plugin creates `plugins/Reports/config.yml` and `reports.db` automatically. Use a current Paper 26.3 build; the Paper API dependency follows Paper's 26.3 build-version range.
 
 ## Commands and permissions
 
@@ -122,7 +122,7 @@ The button returns the 25 most recent reports for that reported player privately
 
 `/report` presents known players, not just online players. A join updates the UUID-keyed `known_players` table; that prevents duplicate display entries. The 7-row UI uses 45 player slots, with safe pagination, a cycling all/online/offline hopper filter, and a native Paper virtual sign prompt for case-insensitive offline-player search. Selecting a player opens another four-line sign prompt; nonempty text is joined and checked against `reports.max-reason-length`.
 
-After a report is saved, players receive a clickable chat link to open Snake (or can use `/snake`). Control the snake by clicking the on-screen arrows, arranged like an arrow-key cluster; it moves one space per second (20 ticks). Hitting a wall or the snake ends the round, and the game-over screen offers a restart or exit. The game protects the player from damage only while it is open and restores their previous invulnerability state when it ends.
+After a report is saved, players receive a clickable chat link to open Snake (or can use `/snake`). Control the snake by clicking the on-screen arrows, arranged like an arrow-key cluster (up centered above left, down, and right); it moves one space per second (20 ticks). Hitting a wall or the snake ends the round, and the game-over screen offers a restart or exit. The game protects the player from damage only while it is open and restores their previous invulnerability state when it ends.
 
 Combat logging is configurable under `reports.waiting-game`: set `combat-tag-seconds` to choose the PvP tag duration, then enable `combat-logging` and set its console `command`. The default is disabled. `%player%` and `%uuid%` are replaced with the player who disconnects during the tag. Both PvP participants are tagged, including a player shooting a projectile at another player.
 

@@ -12,6 +12,7 @@ import de.example.reports.gui.AdminReportGuiService;
 import de.example.reports.gui.ReportGuiService;
 import de.example.reports.gui.SignInput;
 import de.example.reports.gui.SnakeGameService;
+import de.example.reports.integrity.IntegrityManifest;
 import de.example.reports.listener.ReportListener;
 import de.example.reports.model.Sanction;
 import de.example.reports.moderation.ModerationService;
@@ -21,6 +22,7 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public final class ReportsPlugin extends JavaPlugin {
     private Database database;
@@ -32,6 +34,16 @@ public final class ReportsPlugin extends JavaPlugin {
     private SnakeGameService snake;
     @Override
     public void onEnable() {
+        try {
+            Path pluginJar = Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            IntegrityManifest.verify(pluginJar);
+            getLogger().info("Plugin integrity verified.");
+        } catch (Exception e) {
+            getLogger().severe("Plugin integrity check failed; refusing to start: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         PaperEquipmentSettings.enableEquipmentUpdates(this);
         saveDefaultConfig();
         settings = PluginSettings.from(getConfig());

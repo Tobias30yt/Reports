@@ -83,6 +83,29 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>generate-plugin-integrity-manifest</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>de.example.reports.integrity.IntegrityManifest</mainClass>
+              <arguments>
+                <argument>generate</argument>
+                <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                <argument>${project.basedir}/moderation/integrity.sha256</argument>
+              </arguments>
+              <classpathScope>runtime</classpathScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
