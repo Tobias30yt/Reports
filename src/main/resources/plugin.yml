@@ -13,6 +13,9 @@ commands:
     permission: reports.agui
   snake:
     description: Start the waiting Snake game
+  flags:
+    description: View or clear GrimAC flags stored by Reports
+    permission: reports.flags
   ban: {description: Permanently ban a player, permission: reports.ban}
   tempban: {description: Temporarily ban a player, permission: reports.tempban}
   mute: {description: Permanently mute a player, permission: reports.mute}
@@ -29,3 +32,4 @@ permissions:
   reports.mute: {default: op}
   reports.tempmute: {default: op}
   reports.unban: {default: op}
+  reports.flags: {default: op}

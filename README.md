@@ -20,6 +20,10 @@ Copy `target/Reports.jar` to the server's `plugins/` directory and start Paper o
 | `/reports info <id>` | `reports.view` | Show report data |
 | `/reports status <id> <OPEN|REVIEWING|RESOLVED|REJECTED>` | `reports.manage` | Change report status |
 | `/reports reload` | `reports.admin` | Reload configuration and Discord connection |
+| `/flags see <player>` | `reports.flags` | Show up to 50 GrimAC flag events captured by Reports |
+| `/flags remove <player>` | `reports.flags` | Delete GrimAC flag history stored by Reports |
+
+The `/flags` command records GrimAC flag events from the time Reports starts listening. It does not reset GrimAC's live violation level. Removing a player's entries deletes only Reports' stored flag history.
 
 ## Discord bot setup
 

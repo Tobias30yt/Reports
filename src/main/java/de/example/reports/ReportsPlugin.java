@@ -1,5 +1,6 @@
 package de.example.reports;
 
+import de.example.reports.command.FlagsCommand;
 import de.example.reports.command.ModerationCommand;
 import de.example.reports.command.ReportCommand;
 import de.example.reports.command.ReportsCommand;
@@ -58,7 +59,7 @@ public final class ReportsPlugin extends JavaPlugin {
             return;
         }
 
-        GrimHook grim = new GrimHook();
+        GrimHook grim = new GrimHook(this, database);
         getLogger().info("GrimAC " + (grim.available() ? "detected" : "not detected") + ".");
         SignInput sign = new SignInput(this);
         ModerationService moderation = new ModerationService(this, database);
@@ -72,6 +73,13 @@ public final class ReportsPlugin extends JavaPlugin {
         command("report", new ReportCommand(gui, messages));
         command("reports", new ReportsCommand(this, database, adminGui));
         command("snake", new SnakeCommand(snake));
+        PluginCommand flagsCommand = getCommand("flags");
+        if (flagsCommand == null) {
+            throw new IllegalStateException("Missing command flags");
+        }
+        FlagsCommand flagsExecutor = new FlagsCommand(this, database, grim);
+        flagsCommand.setExecutor(flagsExecutor);
+        flagsCommand.setTabCompleter(flagsExecutor);
         command("ban", new ModerationCommand(moderation, Sanction.Type.BAN, false, false));
         command("tempban", new ModerationCommand(moderation, Sanction.Type.BAN, true, false));
         command("mute", new ModerationCommand(moderation, Sanction.Type.MUTE, false, false));
