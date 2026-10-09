@@ -36,7 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class SnakeGameService implements Listener {
     private static final int WIDTH = 7;
     private static final int HEIGHT = 4;
-    private static final int TICKS_PER_MOVE = 10;
+    private static final int TICKS_PER_MOVE = 20;
     private static final int[] BOARD_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,
@@ -91,7 +91,7 @@ public final class SnakeGameService implements Listener {
         SnakeInventory holder = new SnakeInventory();
         Inventory inventory = Bukkit.createInventory(
                 holder,
-                54,
+                63,
                 Component.text("Snake - Pfeile anklicken")
         );
         holder.inventory(inventory);
@@ -145,8 +145,8 @@ public final class SnakeGameService implements Listener {
         if (game.gameOver) {
             inventory.setItem(22, item(Material.RED_STAINED_GLASS_PANE, game.won ? "You win!" : "Game over"));
             inventory.setItem(31, item(Material.GOLD_INGOT, "Final score: " + game.score));
-            inventory.setItem(48, item(Material.SLIME_BALL, "Play again"));
-            inventory.setItem(51, item(Material.BARRIER, "Exit game"));
+            inventory.setItem(57, item(Material.SLIME_BALL, "Play again"));
+            inventory.setItem(62, item(Material.BARRIER, "Exit game"));
             return;
         }
 
@@ -161,11 +161,11 @@ public final class SnakeGameService implements Listener {
                 game.started ? Material.GOLD_INGOT : Material.CLOCK,
                 game.started ? "Score: " + game.score : "Pfeiltaste anklicken, um zu starten"
         ));
-        inventory.setItem(47, direction("↑", "Up"));
-        inventory.setItem(48, direction("←", "Left"));
-        inventory.setItem(49, direction("↓", "Down"));
-        inventory.setItem(50, direction("→", "Right"));
-        inventory.setItem(51, item(Material.BARRIER, "End game"));
+        inventory.setItem(48, direction("↑", "Up"));
+        inventory.setItem(56, direction("←", "Left"));
+        inventory.setItem(57, direction("↓", "Down"));
+        inventory.setItem(58, direction("→", "Right"));
+        inventory.setItem(62, item(Material.BARRIER, "End game"));
     }
 
     @EventHandler
@@ -185,18 +185,18 @@ public final class SnakeGameService implements Listener {
         }
 
         switch (event.getRawSlot()) {
-            case 47 -> game.turn(0, -1);
-            case 48 -> {
+            case 48 -> game.turn(0, -1);
+            case 56 -> game.turn(-1, 0);
+            case 57 -> {
                 if (game.gameOver) {
                     game.reset();
                     draw(game.inventory, game);
                 } else {
-                    game.turn(-1, 0);
+                    game.turn(0, 1);
                 }
             }
-            case 49 -> game.turn(0, 1);
-            case 50 -> game.turn(1, 0);
-            case 51 -> end(player);
+            case 58 -> game.turn(1, 0);
+            case 62 -> end(player);
             default -> {
             }
         }
