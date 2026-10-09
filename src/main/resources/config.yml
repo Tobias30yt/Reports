@@ -1,0 +1,31 @@
+database:
+  file: reports.db
+discord:
+  enabled: false
+  token: ""
+  guild-id: ""
+  report-channel-id: ""
+  chat-log-channel-id: ""
+  staff-role-id: ""
+  retry-attempts: 3
+reports:
+  max-reason-length: 256
+  page-size: 45
+  waiting-game:
+    enabled: true
+    combat-tag-seconds: 15
+    combat-logging:
+      enabled: false
+      command: "kick %player% Combat logging is not allowed."
+    messages:
+      report-pending: "<yellow>Dein Report wird bald von einem Teammitglied bearbeitet. Viel Spaß bei Snake!</yellow>"
+      combat-blocked: "<red>Du kannst Snake nicht während eines Kampfes starten.</red>"
+timezone: "Europe/Berlin"
+messages:
+  prefix: "<dark_gray>[<red>Reports</red>]</dark_gray> "
+  report-created: "<green>Dein Report gegen <yellow>%player%</yellow> wurde erstellt. ID: <gold>#%id%</gold></green>"
+  no-player-found: "<red>Kein bekannter Spieler wurde gefunden.</red>"
+  reason-empty: "<red>Der Report-Grund darf nicht leer sein.</red>"
+  reason-too-long: "<red>Der Grund ist zu lang (maximal %max% Zeichen).</red>"
+  no-permission: "<red>Dafür hast du keine Berechtigung.</red>"
+  discord-disabled: "<yellow>Discord ist deaktiviert oder nicht konfiguriert.</yellow>"

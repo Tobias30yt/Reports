@@ -1,0 +1,5 @@
+package de.example.reports.config;
+import org.bukkit.configuration.file.FileConfiguration; import java.time.ZoneId;
+public record PluginSettings(String databaseFile, boolean discordEnabled, String discordToken, String guildId, String channelId, String chatLogChannelId, String staffRoleId, int retryAttempts, int maxReasonLength, int pageSize, ZoneId zone) {
+ public static PluginSettings from(FileConfiguration c) { ZoneId z; try { z=ZoneId.of(c.getString("timezone","Europe/Berlin")); } catch(Exception e){ z=ZoneId.of("Europe/Berlin"); } return new PluginSettings(c.getString("database.file","reports.db"),c.getBoolean("discord.enabled"),c.getString("discord.token",""),c.getString("discord.guild-id",""),c.getString("discord.report-channel-id",""),c.getString("discord.chat-log-channel-id",""),c.getString("discord.staff-role-id",""),Math.max(0,c.getInt("discord.retry-attempts",3)),Math.max(1,c.getInt("reports.max-reason-length",256)),Math.min(45,Math.max(1,c.getInt("reports.page-size",45))),z); }
+}

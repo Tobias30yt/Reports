@@ -1,0 +1,3 @@
+package de.example.reports.command;
+import de.example.reports.gui.ReportGuiService; import de.example.reports.util.Messages; import org.bukkit.command.*; import org.bukkit.entity.Player;
+public final class ReportCommand implements CommandExecutor {private final ReportGuiService gui;private final Messages messages;public ReportCommand(ReportGuiService g,Messages m){gui=g;messages=m;}public boolean onCommand(CommandSender s,Command c,String l,String[] a){if(!(s instanceof Player p)){s.sendMessage("This command is player-only.");return true;}if(!p.hasPermission("reports.create")){messages.send(p,"no-permission");return true;}gui.open(p);return true;}}

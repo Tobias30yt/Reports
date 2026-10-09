@@ -1,0 +1,77 @@
+package de.example.reports.discord;
+
+import de.example.reports.config.PluginSettings;
+import de.example.reports.database.Database;
+import de.example.reports.model.Report;
+import de.example.reports.model.Sanction;
+import de.example.reports.moderation.ModerationService;
+import net.dv8tion.jda.api.*;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import org.bukkit.plugin.java.JavaPlugin;
+import java.awt.Color;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+
+/** Discord report delivery, configuration commands, and chat archive. */
+public final class DiscordService extends ListenerAdapter {
+ private static final int CHAT_RESULT_LIMIT=15;
+ private final JavaPlugin plugin; private final Database database; private final ModerationService moderation; private PluginSettings settings; private volatile JDA jda;
+ public DiscordService(JavaPlugin plugin, Database database, ModerationService moderation, PluginSettings settings){this.plugin=plugin;this.database=database;this.moderation=moderation;this.settings=settings;}
+ public void start(){if(!configured()){plugin.getLogger().info("Discord disabled or incomplete configuration.");return;}try{jda=JDABuilder.createDefault(settings.discordToken(),GatewayIntent.GUILD_MESSAGES,GatewayIntent.MESSAGE_CONTENT).addEventListeners(this).build();plugin.getLogger().info("Discord connection started.");}catch(Exception e){plugin.getLogger().warning("Discord could not be started; reports will still be saved. "+e.getMessage());}}
+ public void reconfigure(PluginSettings newSettings){shutdown();settings=newSettings;start();}
+ /** A guild is deliberately not required here: the first setup command records it. */
+ private boolean configured(){return settings.discordEnabled()&&!settings.discordToken().isBlank();}
+ @Override public void onReady(ReadyEvent event){if(!settings.guildId().isBlank()){Guild guild=event.getJDA().getGuildById(settings.guildId());if(guild!=null)registerCommands(guild);}}
+ private void registerCommands(Guild guild){guild.updateCommands().addCommands(Commands.slash("menu","Open the Reports staff menu"),Commands.slash("reports","Show recent reports"),Commands.slash("report","Show report details and Grim flags").addOption(OptionType.INTEGER,"id","Report ID",true),Commands.slash("ban","Permanently ban a Minecraft player").addOption(OptionType.STRING,"player","Minecraft player",true).addOption(OptionType.STRING,"reason","Reason",false),Commands.slash("tempban","Temporarily ban a Minecraft player").addOption(OptionType.STRING,"player","Minecraft player",true).addOption(OptionType.STRING,"duration","Example: 1h, 7d",true).addOption(OptionType.STRING,"reason","Reason",false),Commands.slash("mute","Permanently mute a Minecraft player").addOption(OptionType.STRING,"player","Minecraft player",true),Commands.slash("tempmute","Temporarily mute a Minecraft player").addOption(OptionType.STRING,"player","Minecraft player",true).addOption(OptionType.STRING,"duration","Example: 1h, 7d",true),Commands.slash("unban","Remove Reports ban and mute").addOption(OptionType.STRING,"player","Minecraft player",true)).queue();}
+ @Override public void onSlashCommandInteraction(SlashCommandInteractionEvent e){if(!e.isFromGuild()||!discordStaff(e)){e.reply("You need Manage Server or the configured staff role.").setEphemeral(true).queue();return;}String name=e.getName();if(name.equals("menu")){showMenu(e);return;}if(name.equals("reports")){e.deferReply(true).queue();sendReports(e);return;}if(name.equals("report")){long id=e.getOption("id").getAsLong();e.deferReply(true).queue();database.report(id).thenAccept(report->e.getHook().sendMessage(report.map(r->"#"+r.id()+" • "+r.status()+"\nPlayer: "+r.reportedName()+"\nReporter: "+r.reporterName()+"\nReason: "+r.reason()+"\nGrim flags: "+r.grimFlags()).orElse("Report not found.")).queue());return;}String player=e.getOption("player").getAsString();e.deferReply(true).queue();database.playerByName(player).thenAccept(found->{if(found.isEmpty()){e.getHook().sendMessage("Unknown Minecraft player.").queue();return;}var target=found.get();if(name.equals("unban")){moderation.pardon(plugin.getServer().getConsoleSender(),target.uuid(),target.name());e.getHook().sendMessage("Sanctions removed for "+target.name()+".").queue();return;}Sanction.Type type=name.contains("ban")?Sanction.Type.BAN:Sanction.Type.MUTE;Duration duration=name.startsWith("temp")?parseDuration(e.getOption("duration").getAsString()):null;if(name.startsWith("temp")&&duration==null){e.getHook().sendMessage("Invalid duration: use 30m, 12h, or 7d.").queue();return;}String reason=e.getOption("reason")==null?"Discord /"+name+" by "+e.getUser().getName():e.getOption("reason").getAsString();moderation.apply(plugin.getServer().getConsoleSender(),target.uuid(),target.name(),type,duration,reason);e.getHook().sendMessage("Applied "+name+" to "+target.name()+".").queue();});}
+ private void showMenu(SlashCommandInteractionEvent e){e.replyEmbeds(new EmbedBuilder().setTitle("Reports • Staff Menu").setColor(new Color(80,150,255)).setDescription("Open reports, view moderation help, or use the `/` commands for bans and mutes.").addField("Report tools","`/reports` • `/report id`",false).addField("Moderation","`/ban` • `/tempban` • `/mute` • `/tempmute` • `/unban`",false).build()).addActionRow(Button.primary("menu:reports","Recent Reports"),Button.secondary("menu:help","Command Help"),Button.danger("menu:moderation","Moderation Help")).setEphemeral(true).queue();}
+ private void sendReports(SlashCommandInteractionEvent e){database.recentReports(null,0,10).thenAccept(rows->e.getHook().sendMessage(rows.isEmpty()?"No reports.":rows.stream().map(r->"#"+r.id()+" • "+r.status()+" • "+r.reportedName()+" • "+r.reason()).reduce((a,b)->a+"\n"+b).orElse("No reports.")).queue());}
+ private Duration parseDuration(String input){try{long n=Long.parseLong(input.substring(0,input.length()-1));if(n<1)return null;return switch(input.substring(input.length()-1).toLowerCase(Locale.ROOT)){case "m"->Duration.ofMinutes(n);case "h"->Duration.ofHours(n);case "d"->Duration.ofDays(n);default->null;};}catch(Exception ignored){return null;}}
+ private boolean discordStaff(SlashCommandInteractionEvent e){Member m=e.getMember();return m!=null&&(m.hasPermission(Permission.MANAGE_SERVER)||(!settings.staffRoleId().isBlank()&&m.getRoles().stream().anyMatch(r->r.getId().equals(settings.staffRoleId()))));}
+ public void sendReport(Report report){JDA api=jda;if(api==null||settings.channelId().isBlank())return;Guild guild=api.getGuildById(settings.guildId());if(guild==null){retry(report,1);return;}TextChannel channel=guild.getTextChannelById(settings.channelId());if(channel==null){plugin.getLogger().warning("Configured Discord report channel was not found.");return;}channel.sendMessageEmbeds(embed(report)).setActionRow(Button.primary("reports:other:"+report.reportedUuid(),"View Other Reports")).queue(ok->{},error->retry(report,1));}
+ private MessageEmbed embed(Report r){String timestamp="<t:"+r.timestamp().getEpochSecond()+":F>";return new EmbedBuilder().setTitle("New Report #"+r.id()).setColor(new Color(220,60,60)).addField("Player",safe(r.reportedName()),true).addField("Reported by",safe(r.reporterName()),true).addField("Status",r.status().name(),true).addField("Reason",safe(r.reason()),false).addField("Time Reported",timestamp,false).addField("GrimAC Flags",safe(r.grimFlags()),false).build();}
+ private String safe(String v){return v==null||v.isBlank()?"Not available":v.length()>1024?v.substring(0,1021)+"...":v;}
+ private void retry(Report r,int attempt){if(attempt>settings.retryAttempts()){plugin.getLogger().warning("Discord delivery failed for report #"+r.id()+" after retries.");return;}plugin.getServer().getAsyncScheduler().runDelayed(plugin,t->sendReport(r),15L*attempt,TimeUnit.SECONDS);}
+
+ @Override public void onMessageReceived(MessageReceivedEvent event){
+  if(!event.isFromGuild()||event.getAuthor().isBot())return;
+  if(!(event.getChannel() instanceof TextChannel source))return;
+  String content=event.getMessage().getContentDisplay(); Guild guild=event.getGuild();
+  database.saveChatLog(guild.getId(),source.getId(),source.getName(),event.getAuthor().getId(),event.getAuthor().getName(),content,event.getMessage().getTimeCreated().toInstant().toEpochMilli());
+  if(content.startsWith("!"))handleCommand(event,content.trim());
+  if(settings.chatLogChannelId().isBlank()||source.getId().equals(settings.chatLogChannelId()))return;
+  TextChannel archive=guild.getTextChannelById(settings.chatLogChannelId());
+  if(archive!=null)archive.sendMessage("["+source.getName()+"] **"+event.getAuthor().getName()+"**: "+safeMessage(content)).queue();
+ }
+ private String safeMessage(String message){return message.length()>1850?message.substring(0,1847)+"...":message;}
+ private void handleCommand(MessageReceivedEvent event,String input){
+  String[] pieces=input.split("\\s+",3); String command=pieces[0].toLowerCase(Locale.ROOT);
+  if(command.equals("!setreportsgroup")||command.equals("!setchatlogs")){if(!admin(event)){reply(event,"Dafür brauchst du die Berechtigung **Server verwalten**.");return;}if(pieces.length<2){reply(event,"Bitte pinge einen Textkanal, z. B. `"+command+" #reports`.");return;}TextChannel channel=mentionedChannel(event);if(channel==null){reply(event,"Bitte pinge einen gültigen Textkanal.");return;}String key=command.equals("!setreportsgroup")?"discord.report-channel-id":"discord.chat-log-channel-id";plugin.getConfig().set("discord.guild-id",event.getGuild().getId());plugin.getConfig().set(key,channel.getId());plugin.saveConfig();settings=PluginSettings.from(plugin.getConfig());registerCommands(event.getGuild());reply(event,(command.equals("!setreportsgroup")?"Report-Kanal":"Chat-Log-Kanal")+" wurde auf "+channel.getAsMention()+" gesetzt. Die `/`-Befehle sind registriert.");return;}
+  if(command.equals("!listchat")){if(!admin(event)){reply(event,"Dafür brauchst du die Berechtigung **Server verwalten**.");return;}listChat(event,pieces.length>=2?input.substring("!listchat".length()).trim():"");return;}
+  if(command.equals("!chathelp")||command.equals("!reporthelp"))reply(event,"`!setreportsgroup #kanal` • `!setchatlogs #kanal` • `!listchat [commands|player <name>|message <text>]`\nKanalbefehle benötigen **Server verwalten**. Die Einrichtung funktioniert auch ohne vorher eingetragene Guild-ID.");
+ }
+ private TextChannel mentionedChannel(MessageReceivedEvent event){return event.getMessage().getMentions().getChannels().stream().filter(c->c instanceof TextChannel).map(c->(TextChannel)c).findFirst().orElse(null);}
+ private boolean admin(MessageReceivedEvent event){Member member=event.getMember();return member!=null&&member.hasPermission(Permission.MANAGE_SERVER);}
+ private void listChat(MessageReceivedEvent event,String query){
+  String player="",text="";boolean commands=false;String[] args=query.split("\\s+",2);if(query.equalsIgnoreCase("commands"))commands=true;else if(args.length==2&&args[0].equalsIgnoreCase("player"))player=args[1];else if(args.length==2&&(args[0].equalsIgnoreCase("message")||args[0].equalsIgnoreCase("messages")))text=args[1];else if(!query.isBlank()){reply(event,"Filter: `commands`, `player <name>` oder `message <text>`.");return;}
+  final String selectedPlayer=player, selectedText=text; final boolean commandsFilter=commands;
+  database.chatLogs(event.getGuild().getId(),selectedPlayer,selectedText,commandsFilter,CHAT_RESULT_LIMIT).thenAccept(rows->{String title=commandsFilter?"Commands":!selectedPlayer.isBlank()?"Spieler: "+selectedPlayer:!selectedText.isBlank()?"Nachricht: "+selectedText:"Letzte Chatnachrichten";String body=rows.isEmpty()?"Keine passenden Chatnachrichten gefunden.":String.join("\n",rows);event.getChannel().sendMessageEmbeds(new EmbedBuilder().setTitle("Chat-Archiv – "+title).setColor(new Color(70,130,180)).setDescription("```\n"+truncate(body,3900)+"\n```").setFooter("Maximal "+CHAT_RESULT_LIMIT+" Ergebnisse").build()).queue();}).exceptionally(error->{reply(event,"Das Chat-Archiv konnte nicht gelesen werden.");return null;});
+ }
+ private String truncate(String value,int max){return value.length()<=max?value:value.substring(0,max-3)+"...";}
+ private void reply(MessageReceivedEvent event,String text){event.getChannel().sendMessage(text).queue();}
+ @Override public void onButtonInteraction(ButtonInteractionEvent e){String id=e.getComponentId();if(id.startsWith("menu:")){if(!discordStaff(e)){e.reply("You need Manage Server or the configured staff role.").setEphemeral(true).queue();return;}if(id.equals("menu:reports")){e.deferReply(true).queue();database.recentReports(null,0,10).thenAccept(rows->e.getHook().sendMessage(rows.isEmpty()?"No reports.":rows.stream().map(r->"#"+r.id()+" • "+r.status()+" • "+r.reportedName()+" • "+r.reason()).reduce((a,b)->a+"\n"+b).orElse("No reports.")).queue());return;}if(id.equals("menu:help")){e.reply("Report details: `/report id:<id>`\nRecent reports: `/reports`\nUse the moderation button for ban/mute command syntax.").setEphemeral(true).queue();return;}e.reply("`/ban player:<name> [reason]`\n`/tempban player:<name> duration:<1h|7d> [reason]`\n`/mute player:<name>`\n`/tempmute player:<name> duration:<1h|7d>`\n`/unban player:<name>`").setEphemeral(true).queue();return;}String[] p=id.split(":",3);if(p.length!=3||!p[0].equals("reports")||!p[1].equals("other"))return;if(!staff(e)){e.reply("You are not authorized to view report details.").setEphemeral(true).queue();return;}UUID uuid;try{uuid=UUID.fromString(p[2]);}catch(IllegalArgumentException x){e.reply("Invalid report reference.").setEphemeral(true).queue();return;}e.deferReply(true).queue();database.reportsFor(uuid).thenAccept(list->{String text=list.isEmpty()?"No reports found.":list.stream().map(r->"#"+r.id()+" • "+r.status()+" • "+r.reason()).reduce((a,b)->a+"\n"+b).orElse("No reports found.");e.getHook().sendMessage("Reports for `"+uuid+"`:\n"+text.substring(0,Math.min(1900,text.length()))).queue();}).exceptionally(x->{e.getHook().sendMessage("Database error while retrieving reports.").queue();return null;});}
+ private boolean staff(ButtonInteractionEvent e){if(settings.staffRoleId().isBlank())return false;Member m=e.getMember();return m!=null&&m.getRoles().stream().anyMatch(r->r.getId().equals(settings.staffRoleId()));}
+ private boolean discordStaff(ButtonInteractionEvent e){Member m=e.getMember();return m!=null&&(m.hasPermission(Permission.MANAGE_SERVER)||(!settings.staffRoleId().isBlank()&&m.getRoles().stream().anyMatch(r->r.getId().equals(settings.staffRoleId()))));}
+ public void shutdown(){JDA api=jda;jda=null;if(api!=null)api.shutdown();}
+}

@@ -1,0 +1,31 @@
+name: Reports
+version: 1.2.31
+main: de.example.reports.ReportsPlugin
+api-version: '26.3'
+author: Tobias30
+softdepend: [GrimAC]
+commands:
+  report:
+    description: Report a player
+    permission: reports.create
+  reports:
+    description: Manage reports
+    permission: reports.agui
+  snake:
+    description: Start the waiting Snake game
+  ban: {description: Permanently ban a player, permission: reports.ban}
+  tempban: {description: Temporarily ban a player, permission: reports.tempban}
+  mute: {description: Permanently mute a player, permission: reports.mute}
+  tempmute: {description: Temporarily mute a player, permission: reports.tempmute}
+  unban: {description: Remove a player's Reports sanctions, permission: reports.unban}
+permissions:
+  reports.create: {default: true}
+  reports.view: {default: op}
+  reports.manage: {default: op}
+  reports.admin: {default: op}
+  reports.agui: {default: op}
+  reports.ban: {default: op}
+  reports.tempban: {default: op}
+  reports.mute: {default: op}
+  reports.tempmute: {default: op}
+  reports.unban: {default: op}

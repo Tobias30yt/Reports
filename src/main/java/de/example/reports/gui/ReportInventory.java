@@ -1,0 +1,4 @@
+package de.example.reports.gui;
+import org.bukkit.inventory.Inventory; import org.bukkit.inventory.InventoryHolder; import org.jetbrains.annotations.NotNull;
+import java.util.*;
+public final class ReportInventory implements InventoryHolder { private Inventory inventory; private final int page; private final PlayerFilter filter; private final String search; private final List<UUID> targets; public ReportInventory(int page,PlayerFilter filter,String search,List<UUID> targets){this.page=page;this.filter=filter;this.search=search;this.targets=List.copyOf(targets);} public void inventory(Inventory i){inventory=i;} @Override public @NotNull Inventory getInventory(){return inventory;} public int page(){return page;} public PlayerFilter filter(){return filter;} public String search(){return search;} public List<UUID> targets(){return targets;} }

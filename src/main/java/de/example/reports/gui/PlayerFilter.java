@@ -1,0 +1,1 @@
+package de.example.reports.gui; public enum PlayerFilter { ALL("All Players"), ONLINE("Online"), OFFLINE("Offline"); private final String label; PlayerFilter(String l){label=l;} public String label(){return label;} public PlayerFilter next(){return values()[(ordinal()+1)%values().length];} }
