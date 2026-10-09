@@ -126,7 +126,7 @@ After a report is saved, players receive a clickable chat link to open Snake (or
 
 Combat logging is configurable under `reports.waiting-game`: set `combat-tag-seconds` to choose the PvP tag duration, then enable `combat-logging` and set its console `command`. The default is disabled. `%player%` and `%uuid%` are replaced with the player who disconnects during the tag. Both PvP participants are tagged, including a player shooting a projectile at another player.
 
-On startup, the plugin enables Paper's `unsupported-settings.update-equipment-on-player-actions` option for the running server so equipment attribute changes are applied during player actions, including rapid item swaps. If the Paper runtime does not expose that setting, the plugin logs the manual `config/paper-global.yml` setting to apply.
+On startup, the plugin disables Paper's `unsupported-settings.update-equipment-on-player-actions` option for the running server to preserve vanilla-style rapid attribute/cooldown swapping. If the Paper runtime does not expose that setting, the plugin logs the manual `config/paper-global.yml` setting to apply (`false`).
 
 Inventory interactions are cancelled for plugin-held report and Snake inventories. The report-selection and Snake screens use typed holders rather than title comparisons.
 

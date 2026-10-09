@@ -44,7 +44,7 @@ public final class ReportsPlugin extends JavaPlugin {
             return;
         }
 
-        PaperEquipmentSettings.enableEquipmentUpdates(this);
+        PaperEquipmentSettings.enableAttributeSwapping(this);
         saveDefaultConfig();
         settings = PluginSettings.from(getConfig());
         messages = new Messages(getConfig());

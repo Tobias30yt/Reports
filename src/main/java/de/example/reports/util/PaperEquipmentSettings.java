@@ -11,7 +11,7 @@ public final class PaperEquipmentSettings {
     private PaperEquipmentSettings() {
     }
 
-    public static void enableEquipmentUpdates(JavaPlugin plugin) {
+    public static void enableAttributeSwapping(JavaPlugin plugin) {
         try {
             ClassLoader serverClassLoader = plugin.getServer().getClass().getClassLoader();
             Class<?> configurationClass = serverClassLoader.loadClass(CONFIG_CLASS);
@@ -29,17 +29,20 @@ public final class PaperEquipmentSettings {
 
             Field equipmentUpdatesField = unsupportedSettings.getClass()
                     .getField("updateEquipmentOnPlayerActions");
-            equipmentUpdatesField.setBoolean(unsupportedSettings, true);
-            plugin.getLogger().info("Enabled Paper equipment updates on player actions.");
+            equipmentUpdatesField.setBoolean(unsupportedSettings, false);
+            if (equipmentUpdatesField.getBoolean(unsupportedSettings)) {
+                throw new IllegalStateException("Paper did not accept the attribute-swapping setting.");
+            }
+            plugin.getLogger().info("Enabled vanilla-style attribute swapping.");
         } catch (ReflectiveOperationException | SecurityException | IllegalArgumentException e) {
             plugin.getLogger().warning(
-                    "Could not enable Paper equipment updates automatically. "
-                            + "Set unsupported-settings.update-equipment-on-player-actions to true "
+                    "Could not enable vanilla-style attribute swapping automatically. "
+                            + "Set unsupported-settings.update-equipment-on-player-actions to false "
                             + "in config/paper-global.yml. Cause: " + e.getMessage()
             );
         } catch (IllegalStateException e) {
             plugin.getLogger().warning(
-                    "Could not enable Paper equipment updates automatically: " + e.getMessage()
+                    "Could not enable vanilla-style attribute swapping automatically: " + e.getMessage()
             );
         }
     }
