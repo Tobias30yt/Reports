@@ -143,3 +143,10 @@ At startup, Reports verifies that the JAR's entries match its embedded SHA-256 m
 
 Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt/Claims-Client/releases) lets players use its vanilla-style Snake screen while waiting after a report. Without the mod, the existing chest-based Snake game remains available. The client joins the game only after Reports validates its plugin-channel handshake; closing the screen ends the matching server session.
 
+
+## Alle Tobias30 MidniteSMP plugins
+
+- Claims: _[Paper 1.3.0](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.3.0)_
+- Claims Client Mod: _[1.31.4](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.4)_
+- Reports: _[1.2.34](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.34)_
+- GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_
