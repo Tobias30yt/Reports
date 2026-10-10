@@ -76,7 +76,7 @@ public final class GrimHook implements Listener {
     private void capture(Event event) {
         try {
             Object user = invoke(event, "getUser");
-            UUID playerUuid = (UUID) invoke(user, "getUUID");
+            UUID playerUuid = playerUuid(user);
             String playerName = playerName(user);
             Object check = invoke(event, "getCheck");
             String checkName = checkName(check);
@@ -100,6 +100,17 @@ public final class GrimHook implements Listener {
         } catch (ReflectiveOperationException | ClassCastException | IllegalStateException e) {
             plugin.getLogger().warning("Could not read GrimAC flag event: " + e.getMessage());
         }
+    }
+
+    private UUID playerUuid(Object user) throws ReflectiveOperationException {
+        Object value = invokeIfPresent(user, "getUniqueId");
+        if (value == null) {
+            value = invokeIfPresent(user, "getUUID");
+        }
+        if (value instanceof UUID uuid) {
+            return uuid;
+        }
+        throw new IllegalStateException("GrimAC user does not expose a UUID.");
     }
 
     private String playerName(Object user) throws ReflectiveOperationException {
