@@ -11,6 +11,8 @@ Reports is a staff and player-support plugin for **Paper 26.3** and **Java 25**.
 - **Optional Discord bot:** Forward new reports as embeds, review reports and moderate through staff-only slash commands, and show related reports from a report embed.
 - **Discord chat archive:** Optionally copy Discord text-channel messages to an archive channel and search the SQLite archive, including filters for commands, author, and message text.
 - **Snake mini-game:** Players can start `/snake` or use the clickable chat link after making a report. Control it with the GUI arrow buttons; the snake advances once per second.
+- **Snake leaderboard:** Reports saves each player's best score and displays the top ten with `/snake top` (or `/snake leaderboard`). Modded Snake scores are tied to a server-issued session and checked against elapsed play time.
+- **Release update notices:** On startup and every 48 hours, Reports checks GitHub for a newer stable release. If one is available, the console and online operators receive the release page and direct JAR download links. Disable with `reports.update-checker.enabled: false`.
 - **Combat logging:** Optionally prevent starting Snake during a PvP tag and execute a configured console command if a tagged player disconnects.
 - **Paper attribute swapping:** On startup, Reports sets Paper's `unsupported-settings.update-equipment-on-player-actions` setting to `false` for vanilla-style attribute/cooldown swapping.
 - **Startup integrity check:** The build embeds a SHA-256 manifest of JAR entries and writes a matching copy to `moderation/integrity.sha256`. Reports disables itself if the JAR contents do not match its embedded manifest.

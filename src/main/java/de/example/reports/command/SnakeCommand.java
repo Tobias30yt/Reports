@@ -15,6 +15,10 @@ public final class SnakeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length > 0 && (args[0].equalsIgnoreCase("top") || args[0].equalsIgnoreCase("leaderboard"))) {
+            snake.showLeaderboard(sender);
+            return true;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can play Snake.");
             return true;

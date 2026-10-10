@@ -11,6 +11,8 @@ discord:
 reports:
   max-reason-length: 256
   page-size: 45
+  update-checker:
+    enabled: true
   waiting-game:
     enabled: true
     combat-tag-seconds: 15

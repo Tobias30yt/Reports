@@ -26,12 +26,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.io.File;
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
 
 /** Click-controlled, combat-aware Snake session after a report. */
 public final class SnakeGameService implements Listener, PluginMessageListener {
@@ -50,9 +56,14 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
     private final Map<UUID, Game> games = new ConcurrentHashMap<>();
     private final Map<UUID, Long> combat = new ConcurrentHashMap<>();
     private final java.util.Set<UUID> nativeClients = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, ScoreEntry> leaderboard = new ConcurrentHashMap<>();
+    private final File leaderboardFile;
+    private record ScoreEntry(UUID id, String name, int score) {}
 
     public SnakeGameService(JavaPlugin plugin) {
         this.plugin = plugin;
+        leaderboardFile = new File(plugin.getDataFolder(), "snake-leaderboard.yml");
+        loadLeaderboard();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, HELLO, this);
         plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, ACTION, this);
@@ -64,11 +75,17 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
             if (data.length == 4 && java.nio.ByteBuffer.wrap(data).getInt() == MAGIC) nativeClients.add(player.getUniqueId());
             return;
         }
-        if (!channel.equals(ACTION) || data.length != 13) return;
+        if (!channel.equals(ACTION) || (data.length != 13 && data.length != 17)) return;
         java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(data);
-        if (b.getInt()!=MAGIC || b.get()!=2) return;
-        long token=b.getLong(); Game game=games.get(player.getUniqueId());
-        if (game!=null && game.nativeClient && game.session==token) end(player);
+        if (b.getInt()!=MAGIC) return;
+        byte action=b.get(); long token=b.getLong(); Game game=games.get(player.getUniqueId());
+        if (game==null || !game.nativeClient || game.session!=token) return;
+        if (action==2 && data.length==13) end(player);
+        else if (action==3 && data.length==17) {
+            int score=b.getInt(); int plausibleMax=Math.min(237, game.ticksUntilMove / 5 + 1);
+            if (score<0 || score>plausibleMax || score<=game.nativeScore) return;
+            game.nativeScore=score; recordScore(player, score);
+        }
     }
     private void signal(Player player, int op, long token) {
         if (player.isOnline()) player.sendPluginMessage(plugin, SIGNAL, java.nio.ByteBuffer.allocate(13).putInt(MAGIC).put((byte)op).putLong(token).array());
@@ -161,8 +178,43 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
         }
         game.ticksUntilMove = 0;
         game.step();
+        if (game.gameOver && !game.scoreReported) { game.scoreReported=true; recordScore(player, game.score); }
         if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof SnakeInventory) {
             draw(player.getOpenInventory().getTopInventory(), game);
+        }
+    }
+
+    private void loadLeaderboard() {
+        YamlConfiguration yaml=YamlConfiguration.loadConfiguration(leaderboardFile);
+        var section=yaml.getConfigurationSection("scores");
+        if(section==null)return;
+        for(String key:section.getKeys(false)) try {
+            UUID id=UUID.fromString(key); int score=section.getInt(key+".score", -1);
+            String name=section.getString(key+".name", id.toString());
+            if(score>=0) leaderboard.put(id,new ScoreEntry(id,name,score));
+        } catch(IllegalArgumentException ignored) { plugin.getLogger().warning("Ignoring invalid Snake leaderboard UUID: "+key); }
+    }
+
+    private synchronized void recordScore(Player player,int score) {
+        ScoreEntry old=leaderboard.get(player.getUniqueId());
+        if(old!=null && old.score()>=score)return;
+        leaderboard.put(player.getUniqueId(),new ScoreEntry(player.getUniqueId(),player.getName(),score));
+        YamlConfiguration yaml=new YamlConfiguration();
+        leaderboard.forEach((id,entry)->{
+            yaml.set("scores."+id+".name",entry.name());
+            yaml.set("scores."+id+".score",entry.score());
+        });
+        try { yaml.save(leaderboardFile); }
+        catch(IOException e) { plugin.getLogger().severe("Could not save Snake leaderboard: "+e.getMessage()); }
+    }
+
+    public void showLeaderboard(org.bukkit.command.CommandSender sender) {
+        List<ScoreEntry> top=leaderboard.values().stream().sorted(Comparator.comparingInt(ScoreEntry::score).reversed().thenComparing(ScoreEntry::name,String.CASE_INSENSITIVE_ORDER)).limit(10).toList();
+        sender.sendMessage(Component.text("Snake leaderboard — personal bests",NamedTextColor.GOLD));
+        if(top.isEmpty()){sender.sendMessage(Component.text("No scores yet. Play with /snake!",NamedTextColor.GRAY));return;}
+        for(int i=0;i<top.size();i++) {
+            ScoreEntry entry=top.get(i);
+            sender.sendMessage(Component.text((i+1)+". ",NamedTextColor.YELLOW).append(Component.text(entry.name(),NamedTextColor.WHITE)).append(Component.text(" — "+entry.score(),NamedTextColor.GREEN)));
         }
     }
 
@@ -370,6 +422,8 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
         private boolean won;
         private boolean nativeClient;
         private long session;
+        private boolean scoreReported;
+        private int nativeScore=-1;
         private boolean forwardDown;
         private boolean backwardDown;
         private boolean leftDown;
@@ -498,6 +552,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
             leftDown = false;
             rightDown = false;
             score = 0;
+            scoreReported = false;
             gameOver = false;
             won = false;
             if (!placeFood()) {

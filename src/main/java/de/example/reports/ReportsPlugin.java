@@ -14,6 +14,7 @@ import de.example.reports.gui.ReportGuiService;
 import de.example.reports.gui.SignInput;
 import de.example.reports.gui.SnakeGameService;
 import de.example.reports.integrity.IntegrityManifest;
+import de.example.reports.update.ReleaseUpdateChecker;
 import de.example.reports.listener.ReportListener;
 import de.example.reports.model.Sanction;
 import de.example.reports.moderation.ModerationService;
@@ -33,6 +34,7 @@ public final class ReportsPlugin extends JavaPlugin {
     private ReportGuiService gui;
     private AdminReportGuiService adminGui;
     private SnakeGameService snake;
+    private ReleaseUpdateChecker releaseUpdateChecker;
     @Override
     public void onEnable() {
         try {
@@ -64,6 +66,8 @@ public final class ReportsPlugin extends JavaPlugin {
         SignInput sign = new SignInput(this);
         ModerationService moderation = new ModerationService(this, database);
         snake = new SnakeGameService(this);
+        releaseUpdateChecker = new ReleaseUpdateChecker(this);
+        releaseUpdateChecker.start();
         discord = new DiscordService(this, database, moderation, settings, grim);
         discord.start();
         gui = new ReportGuiService(this, database, messages, sign, grim, discord, snake, settings);
@@ -113,6 +117,7 @@ public final class ReportsPlugin extends JavaPlugin {
         if (snake != null) {
             snake.shutdown();
         }
+        if (releaseUpdateChecker != null) releaseUpdateChecker.shutdown();
         if (discord != null) {
             discord.shutdown();
         }
