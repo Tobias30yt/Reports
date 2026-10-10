@@ -1,9 +1,9 @@
 name: Reports
-version: 1.2.34
+version: 1.2.35
 main: de.example.reports.ReportsPlugin
 api-version: '26.3'
 author: Tobias30
-softdepend: [GrimAC]
+softdepend: [GrimAC, Claims]
 commands:
   report:
     description: Report a player

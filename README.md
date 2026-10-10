@@ -11,7 +11,8 @@ Reports is a staff and player-support plugin for **Paper 26.3** and **Java 25**.
 - **Optional Discord bot:** Forward new reports as embeds, review reports and moderate through staff-only slash commands, and show related reports from a report embed.
 - **Discord chat archive:** Optionally copy Discord text-channel messages to an archive channel and search the SQLite archive, including filters for commands, author, and message text.
 - **Snake mini-game:** Players can start `/snake` or use the clickable chat link after making a report. Control it with the GUI arrow buttons; the snake advances once per second.
-- **Snake leaderboard:** Reports saves each player's best score and displays the top ten with `/snake top` (or `/snake leaderboard`). Modded Snake scores are tied to a server-issued session and checked against elapsed play time.
+- **Snake leaderboard:** Reports saves each player's best score in its SQLite database and displays the top ten in-game with `/snake top` (or `/snake leaderboard`) and in Discord with `/snake`. Modded Snake scores are tied to a server-issued session and checked against elapsed play time.
+- **Claims staff tools:** The Discord staff menu can list protected chunks. `/claims view` shows a claimed chunk's green particle outline to a selected online Claims administrator, from the world floor to build height.
 - **Release update notices:** On startup and every 48 hours, Reports checks GitHub for a newer stable release. If one is available, the console and online operators receive the release page and direct JAR download links. Disable with `reports.update-checker.enabled: false`.
 - **Combat logging:** Optionally prevent starting Snake during a PvP tag and execute a configured console command if a tagged player disconnects.
 - **Paper attribute swapping:** On startup, Reports sets Paper's `unsupported-settings.update-equipment-on-player-actions` setting to `false` for vanilla-style attribute/cooldown swapping.
@@ -120,6 +121,8 @@ The bot registers these guild slash commands when it connects to the configured 
 
 All staff slash commands require **Manage Server** or the configured `discord.staff-role-id`. Removing GrimAC flags through Discord deletes only Reports' stored history; it does not reset GrimAC's violation level.
 
+`/snake` shows the current leaderboard. The **View Claims** button in `/menu` and `/claims list` read protected chunks from the optional Claims plugin. Use `/claims view world:<world> x:<chunk-x> z:<chunk-z> player:<online-admin>` to send a green, full-height particle outline to an online player with `claims.admin`.
+
 Staff can use `!listchat` to show recent archived messages, or filter with `!listchat commands`, `!listchat player <name>`, and `!listchat message <text>`. The newest 15 matching messages are returned. Messages from bots are ignored, and the archive channel is not copied into itself. Messages are retained in SQLite even if they are later removed from Discord.
 
 New report embeds contain a **View Other Reports** button. Access to that button is restricted to members with the configured staff role; if no role ID is configured, the button fails closed. Discord outages do not prevent Minecraft reports from being saved locally.
@@ -146,7 +149,7 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 ## Alle Tobias30 MidniteSMP plugins
 
-- Claims: _[Paper 1.3.0](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.3.0)_
-- Claims Client Mod: _[1.31.4](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.4)_
-- Reports: _[1.2.34](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.34)_
+- Claims: _[Paper 1.5.0](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.0)_
+- Claims Client Mod: _[1.31.6](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.6)_
+- Reports: _[1.2.35](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.35)_
 - GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_

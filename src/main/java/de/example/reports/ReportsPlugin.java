@@ -65,7 +65,7 @@ public final class ReportsPlugin extends JavaPlugin {
         getLogger().info("GrimAC " + (grim.available() ? "detected" : "not detected") + ".");
         SignInput sign = new SignInput(this);
         ModerationService moderation = new ModerationService(this, database);
-        snake = new SnakeGameService(this);
+        snake = new SnakeGameService(this, database);
         releaseUpdateChecker = new ReleaseUpdateChecker(this);
         releaseUpdateChecker.start();
         discord = new DiscordService(this, database, moderation, settings, grim);

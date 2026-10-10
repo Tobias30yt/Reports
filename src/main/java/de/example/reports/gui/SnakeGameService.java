@@ -27,6 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.configuration.file.YamlConfiguration;
+import de.example.reports.database.Database;
 
 import java.util.ArrayDeque;
 import java.util.Map;
@@ -53,6 +54,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
     };
 
     private final JavaPlugin plugin;
+    private final Database database;
     private final Map<UUID, Game> games = new ConcurrentHashMap<>();
     private final Map<UUID, Long> combat = new ConcurrentHashMap<>();
     private final java.util.Set<UUID> nativeClients = ConcurrentHashMap.newKeySet();
@@ -60,8 +62,9 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
     private final File leaderboardFile;
     private record ScoreEntry(UUID id, String name, int score) {}
 
-    public SnakeGameService(JavaPlugin plugin) {
+    public SnakeGameService(JavaPlugin plugin, Database database) {
         this.plugin = plugin;
+        this.database = database;
         leaderboardFile = new File(plugin.getDataFolder(), "snake-leaderboard.yml");
         loadLeaderboard();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -187,28 +190,31 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
     private void loadLeaderboard() {
         YamlConfiguration yaml=YamlConfiguration.loadConfiguration(leaderboardFile);
         var section=yaml.getConfigurationSection("scores");
-        if(section==null)return;
-        for(String key:section.getKeys(false)) try {
+        if(section!=null) for(String key:section.getKeys(false)) try {
             UUID id=UUID.fromString(key); int score=section.getInt(key+".score", -1);
             String name=section.getString(key+".name", id.toString());
             if(score>=0) leaderboard.put(id,new ScoreEntry(id,name,score));
-        } catch(IllegalArgumentException ignored) { plugin.getLogger().warning("Ignoring invalid Snake leaderboard UUID: "+key); }
+        } catch(IllegalArgumentException ignored) { plugin.getLogger().warning("Ignoring invalid legacy Snake leaderboard UUID: "+key); }
+        database.snakeScores(100_000).thenAccept(scores -> {
+            for (Database.SnakeScore score : scores) leaderboard.put(score.uuid(), new ScoreEntry(score.uuid(), score.name(), score.score()));
+            for (ScoreEntry old : leaderboard.values()) database.upsertSnakeScore(old.id(), old.name(), old.score());
+        }).exceptionally(error -> { plugin.getLogger().warning("Could not load Snake leaderboard from SQLite: " + error.getMessage()); return null; });
     }
 
     private synchronized void recordScore(Player player,int score) {
         ScoreEntry old=leaderboard.get(player.getUniqueId());
         if(old!=null && old.score()>=score)return;
         leaderboard.put(player.getUniqueId(),new ScoreEntry(player.getUniqueId(),player.getName(),score));
-        YamlConfiguration yaml=new YamlConfiguration();
-        leaderboard.forEach((id,entry)->{
-            yaml.set("scores."+id+".name",entry.name());
-            yaml.set("scores."+id+".score",entry.score());
-        });
-        try { yaml.save(leaderboardFile); }
-        catch(IOException e) { plugin.getLogger().severe("Could not save Snake leaderboard: "+e.getMessage()); }
+        database.upsertSnakeScore(player.getUniqueId(), player.getName(), score)
+                .exceptionally(error -> { plugin.getLogger().severe("Could not save Snake score to SQLite: " + error.getMessage()); return null; });
     }
 
     public void showLeaderboard(org.bukkit.command.CommandSender sender) {
+        if (sender instanceof Player player) {
+            database.snakeScores(10).thenAccept(rows -> openLeaderboard(player, rows.stream().map(row -> new ScoreEntry(row.uuid(), row.name(), row.score())).toList()))
+                    .exceptionally(error -> { plugin.getLogger().warning("Could not load Snake leaderboard: " + error.getMessage()); return null; });
+            return;
+        }
         List<ScoreEntry> top=leaderboard.values().stream().sorted(Comparator.comparingInt(ScoreEntry::score).reversed().thenComparing(ScoreEntry::name,String.CASE_INSENSITIVE_ORDER)).limit(10).toList();
         sender.sendMessage(Component.text("Snake leaderboard — personal bests",NamedTextColor.GOLD));
         if(top.isEmpty()){sender.sendMessage(Component.text("No scores yet. Play with /snake!",NamedTextColor.GRAY));return;}
@@ -216,6 +222,23 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
             ScoreEntry entry=top.get(i);
             sender.sendMessage(Component.text((i+1)+". ",NamedTextColor.YELLOW).append(Component.text(entry.name(),NamedTextColor.WHITE)).append(Component.text(" — "+entry.score(),NamedTextColor.GREEN)));
         }
+    }
+
+    private void openLeaderboard(Player player, List<ScoreEntry> scores) {
+        player.getScheduler().run(plugin, task -> {
+            SnakeLeaderboardInventory holder = new SnakeLeaderboardInventory();
+            Inventory inventory = Bukkit.createInventory(holder, 27, Component.text("Snake Leaderboard", NamedTextColor.GOLD));
+            holder.inventory(inventory);
+            for (int slot=0; slot<inventory.getSize(); slot++) inventory.setItem(slot, item(Material.BLACK_STAINED_GLASS_PANE, " "));
+            if (scores.isEmpty()) inventory.setItem(13, item(Material.PAPER, "No Snake scores yet — play /snake"));
+            for (int i=0; i<scores.size(); i++) {
+                ScoreEntry entry = scores.get(i);
+                Material icon = i == 0 ? Material.GOLD_INGOT : i == 1 ? Material.IRON_INGOT : i == 2 ? Material.COPPER_INGOT : Material.PAPER;
+                ItemStack row = item(icon, (i + 1) + ". " + entry.name() + " — " + entry.score());
+                inventory.setItem(10 + i, row);
+            }
+            player.openInventory(inventory);
+        }, null);
     }
 
     private void draw(Inventory inventory, Game game) {
@@ -255,6 +278,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
 
     @EventHandler
     public void click(InventoryClickEvent event) {
+        if (event.getView().getTopInventory().getHolder(false) instanceof SnakeLeaderboardInventory) { event.setCancelled(true); return; }
         if (!(event.getView().getTopInventory().getHolder(false) instanceof SnakeInventory)) {
             return;
         }
@@ -289,7 +313,8 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
 
     @EventHandler
     public void drag(InventoryDragEvent event) {
-        if (event.getView().getTopInventory().getHolder(false) instanceof SnakeInventory) {
+        if (event.getView().getTopInventory().getHolder(false) instanceof SnakeInventory
+                || event.getView().getTopInventory().getHolder(false) instanceof SnakeLeaderboardInventory) {
             event.setCancelled(true);
         }
     }
