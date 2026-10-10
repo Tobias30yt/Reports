@@ -25,6 +25,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.util.ArrayDeque;
 import java.util.Map;
@@ -33,7 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Click-controlled, combat-aware Snake session after a report. */
-public final class SnakeGameService implements Listener {
+public final class SnakeGameService implements Listener, PluginMessageListener {
+    private static final String HELLO="claims:snake_hello", ACTION="claims:snake_action", SIGNAL="claims:snake";
+    private static final int MAGIC=0x534E414B;
     private static final int WIDTH = 7;
     private static final int HEIGHT = 3;
     private static final int TICKS_PER_MOVE = 20;
@@ -46,10 +49,29 @@ public final class SnakeGameService implements Listener {
     private final JavaPlugin plugin;
     private final Map<UUID, Game> games = new ConcurrentHashMap<>();
     private final Map<UUID, Long> combat = new ConcurrentHashMap<>();
+    private final java.util.Set<UUID> nativeClients = ConcurrentHashMap.newKeySet();
 
     public SnakeGameService(JavaPlugin plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, HELLO, this);
+        plugin.getServer().getMessenger().registerIncomingPluginChannel(plugin, ACTION, this);
+        plugin.getServer().getMessenger().registerOutgoingPluginChannel(plugin, SIGNAL);
+    }
+
+    @Override public void onPluginMessageReceived(String channel, Player player, byte[] data) {
+        if (channel.equals(HELLO)) {
+            if (data.length == 4 && java.nio.ByteBuffer.wrap(data).getInt() == MAGIC) nativeClients.add(player.getUniqueId());
+            return;
+        }
+        if (!channel.equals(ACTION) || data.length != 13) return;
+        java.nio.ByteBuffer b=java.nio.ByteBuffer.wrap(data);
+        if (b.getInt()!=MAGIC || b.get()!=2) return;
+        long token=b.getLong(); Game game=games.get(player.getUniqueId());
+        if (game!=null && game.nativeClient && game.session==token) end(player);
+    }
+    private void signal(Player player, int op, long token) {
+        if (player.isOnline()) player.sendPluginMessage(plugin, SIGNAL, java.nio.ByteBuffer.allocate(13).putInt(MAGIC).put((byte)op).putLong(token).array());
     }
 
     public void offer(Player player) {
@@ -84,8 +106,18 @@ public final class SnakeGameService implements Listener {
         }
 
         Game game = new Game(player.isInvulnerable());
+        game.nativeClient = nativeClients.contains(player.getUniqueId());
+        game.session = java.util.concurrent.ThreadLocalRandom.current().nextLong();
         games.put(player.getUniqueId(), game);
         player.setInvulnerable(true);
+
+        if (game.nativeClient) {
+            signal(player, 0, game.session);
+            game.task = player.getScheduler().runAtFixedRate(plugin, task -> {
+                if (games.get(player.getUniqueId()) == game && ++game.ticksUntilMove > 20 * 60 * 30) end(player);
+            }, () -> games.remove(player.getUniqueId(), game), 1, 1);
+            return;
+        }
 
         SnakeInventory holder = new SnakeInventory();
         Inventory inventory = Bukkit.createInventory(
@@ -115,6 +147,8 @@ public final class SnakeGameService implements Listener {
                 games.remove(playerId);
             }
         }
+        plugin.getServer().getMessenger().unregisterIncomingPluginChannel(plugin);
+        plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(plugin);
     }
 
     private void tick(Player player, Game game) {
@@ -258,6 +292,7 @@ public final class SnakeGameService implements Listener {
         }
         end(player);
         combat.remove(player.getUniqueId());
+        nativeClients.remove(player.getUniqueId());
     }
 
     private boolean tagged(Player player) {
@@ -295,6 +330,7 @@ public final class SnakeGameService implements Listener {
         if (game.task != null) {
             game.task.cancel();
         }
+        if (game.nativeClient) signal(player, 1, game.session);
         player.setInvulnerable(game.wasInvulnerable);
         if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof SnakeInventory) {
             player.closeInventory();
@@ -332,6 +368,8 @@ public final class SnakeGameService implements Listener {
         private boolean directionQueued;
         private boolean gameOver;
         private boolean won;
+        private boolean nativeClient;
+        private long session;
         private boolean forwardDown;
         private boolean backwardDown;
         private boolean leftDown;

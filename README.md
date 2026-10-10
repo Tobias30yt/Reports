@@ -20,6 +20,8 @@ Reports is a staff and player-support plugin for **Paper 26.3** and **Java 25**.
 
 Download the plugin JAR from the [latest GitHub release](https://github.com/Tobias30yt/Reports/releases/latest). Install Java 25 and a current Paper 26.3 server, then place `Reports.jar` in the server's `plugins/` folder and restart the server. Reports creates `plugins/Reports/config.yml` and its SQLite database on first startup.
 
+The optional [Claims Client Fabric mod](https://github.com/Tobias30yt/Claims-Client/releases) adds a vanilla-style Snake screen for players on supported servers. Without it, the chest-based game remains available.
+
 GrimAC is optional and is only needed for Grim flag capture. No additional dependency plugin is needed for Reports' bundled libraries.
 
 ### Build from source
@@ -135,3 +137,7 @@ At startup, Reports verifies that the JAR's entries match its embedded SHA-256 m
 - **A Discord report button denies access:** Configure the numeric `discord.staff-role-id` and ensure the clicking member has that role.
 - **The bot token was exposed:** Reset it in the Discord Developer Portal, update the config, and restart or reload the plugin.
 - **A muted player's chat is not blocked:** Reports applies stored mutes when the player joins. Check that the player has the expected Reports sanction and that another plugin is not altering chat behavior.
+# Optional Claims Client integration
+
+Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt/Claims-Client/releases) lets players use its vanilla-style Snake screen while waiting after a report. Without the mod, the existing chest-based Snake game remains available. The client joins the game only after Reports validates its plugin-channel handshake; closing the screen ends the matching server session.
+
