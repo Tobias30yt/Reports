@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -142,14 +143,35 @@ public final class GrimHook implements Listener {
     }
 
     private Object invokeIfPresent(Object target, String methodName) throws ReflectiveOperationException {
-        try {
-            Method method = target.getClass().getMethod(methodName);
-            return method.invoke(target);
-        } catch (NoSuchMethodException e) {
+        Method method = publicMethod(target.getClass(), methodName);
+        if (method == null) {
             return null;
+        }
+        try {
+            return method.invoke(target);
         } catch (InvocationTargetException e) {
             throw new IllegalStateException("GrimAC " + methodName + " call failed.", e.getCause());
         }
+    }
+
+    private Method publicMethod(Class<?> type, String name) {
+        try {
+            Method method = type.getMethod(name);
+            if (Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
+                return method;
+            }
+        } catch (NoSuchMethodException ignored) {
+            // Search public API interfaces below; Grim implementations may be package-private.
+        }
+
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            Method method = publicMethod(interfaceType, name);
+            if (method != null) {
+                return method;
+            }
+        }
+        Class<?> parent = type.getSuperclass();
+        return parent == null ? null : publicMethod(parent, name);
     }
 
     private Object invoke(Object target, String methodName) throws ReflectiveOperationException {

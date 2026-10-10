@@ -110,7 +110,11 @@ The bot registers these guild slash commands when it connects to the configured 
 | `/menu` | Open the private staff menu. |
 | `/reports` | Show the 10 newest reports. |
 | `/report id:<id>` | Show report details, including captured GrimAC flags. |
+| `/flags see player:<name>` | View up to 10 recent stored GrimAC flag events, including check details. |
+| `/flags remove player:<name>` | Delete the player's stored flag history. |
 | `/ban`, `/tempban`, `/mute`, `/tempmute`, `/unban` | Apply or remove persistent Reports sanctions. |
+
+All staff slash commands require **Manage Server** or the configured `discord.staff-role-id`. Removing GrimAC flags through Discord deletes only Reports' stored history; it does not reset GrimAC's violation level.
 
 Staff can use `!listchat` to show recent archived messages, or filter with `!listchat commands`, `!listchat player <name>`, and `!listchat message <text>`. The newest 15 matching messages are returned. Messages from bots are ignored, and the archive channel is not copied into itself. Messages are retained in SQLite even if they are later removed from Discord.
 

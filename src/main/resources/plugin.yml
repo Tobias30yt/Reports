@@ -1,5 +1,5 @@
 name: Reports
-version: 1.2.31
+version: 1.2.32
 main: de.example.reports.ReportsPlugin
 api-version: '26.3'
 author: Tobias30

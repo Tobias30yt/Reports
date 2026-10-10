@@ -64,7 +64,7 @@ public final class ReportsPlugin extends JavaPlugin {
         SignInput sign = new SignInput(this);
         ModerationService moderation = new ModerationService(this, database);
         snake = new SnakeGameService(this);
-        discord = new DiscordService(this, database, moderation, settings);
+        discord = new DiscordService(this, database, moderation, settings, grim);
         discord.start();
         gui = new ReportGuiService(this, database, messages, sign, grim, discord, snake, settings);
         adminGui = new AdminReportGuiService(this, database, moderation);
