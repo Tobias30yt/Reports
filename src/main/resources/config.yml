@@ -7,6 +7,8 @@ discord:
   report-channel-id: ""
   chat-log-channel-id: ""
   staff-role-id: ""
+  # This role receives one Discord ping when a player reaches 31 events for a GrimAC check.
+  # Members assigned this role should be the Discord admins corresponding to Minecraft tdw.ping staff.
   retry-attempts: 3
 reports:
   max-reason-length: 256

@@ -16,6 +16,7 @@ import java.lang.reflect.Modifier;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /** Captures GrimAC's public Bukkit flag events without linking against Grim internals. */
@@ -26,6 +27,7 @@ public final class GrimHook implements Listener {
     private final Database database;
     private final Plugin grimPlugin;
     private final ConcurrentMap<UUID, String> latestFlags = new ConcurrentHashMap<>();
+    private volatile BiConsumer<String, String> thresholdAlert = (player, check) -> {};
     private boolean listenerRegistered;
 
     public GrimHook(JavaPlugin plugin, Database database) {
@@ -50,6 +52,10 @@ public final class GrimHook implements Listener {
 
     public void clearLatestFlags(UUID playerUuid) {
         latestFlags.remove(playerUuid);
+    }
+
+    public void thresholdAlert(BiConsumer<String, String> alert) {
+        thresholdAlert = alert == null ? (player, check) -> {} : alert;
     }
 
     private void registerFlagListener() {
@@ -92,6 +98,17 @@ public final class GrimHook implements Listener {
             String storedDetails = details.isBlank() ? "No additional details." : details;
             latestFlags.put(playerUuid, checkName + ": " + storedDetails);
             database.saveGrimFlag(playerUuid, playerName, checkName, storedDetails)
+                    .thenCompose(ignored -> database.countGrimFlags(playerUuid, checkName))
+                    .thenAccept(count -> {
+                        if (count == 31) {
+                            Bukkit.getScheduler().runTask(plugin, () -> plugin.getServer().getOnlinePlayers().stream()
+                                    .filter(player -> player.hasPermission("tdw.ping"))
+                                    .forEach(player -> player.sendMessage("§c[Reports] §f" + playerName
+                                            + " hat GrimAC-Flag §e" + checkName + " §fzum 31. Mal erhalten.")));
+                            plugin.getLogger().warning(playerName + " reached 31 GrimAC flags for " + checkName + ".");
+                            thresholdAlert.accept(playerName, checkName);
+                        }
+                    })
                     .exceptionally(error -> {
                         plugin.getLogger().warning(
                                 "Could not store GrimAC flag for " + playerName + ": " + error.getMessage()

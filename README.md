@@ -121,6 +121,8 @@ The bot registers these guild slash commands when it connects to the configured 
 
 All staff slash commands require **Manage Server** or the configured `discord.staff-role-id`. Removing GrimAC flags through Discord deletes only Reports' stored history; it does not reset GrimAC's violation level.
 
+When a player reaches 31 stored GrimAC flag events for the same check, Reports sends one alert to online Minecraft players with `tdw.ping` and mentions the configured `discord.staff-role-id` in the report channel. Configure that Discord role to represent the same admin group, and ensure the bot can mention it. The alert fires on the first crossing only; `/flags remove` clears the stored count.
+
 `/snake` shows the current leaderboard. The **View Claims** button in `/menu` and `/claims list` read protected chunks from the optional Claims plugin. Use `/claims view world:<world> x:<chunk-x> z:<chunk-z> player:<online-admin>` to send a green, full-height particle outline to an online player with `claims.admin`.
 
 Staff can use `!listchat` to show recent archived messages, or filter with `!listchat commands`, `!listchat player <name>`, and `!listchat message <text>`. The newest 15 matching messages are returned. Messages from bots are ignored, and the archive channel is not copied into itself. Messages are retained in SQLite even if they are later removed from Discord.
@@ -151,5 +153,5 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 - Claims: _[Paper 1.5.0](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.0)_
 - Claims Client Mod: _[1.31.6](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.6)_
-- Reports: _[1.2.35](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.35)_
+- Reports: _[1.2.36](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.36)_
 - GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_

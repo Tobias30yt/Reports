@@ -69,6 +69,7 @@ public final class ReportsPlugin extends JavaPlugin {
         releaseUpdateChecker = new ReleaseUpdateChecker(this);
         releaseUpdateChecker.start();
         discord = new DiscordService(this, database, moderation, settings, grim);
+        grim.thresholdAlert(discord::alertGrimFlagThreshold);
         discord.start();
         gui = new ReportGuiService(this, database, messages, sign, grim, discord, snake, settings);
         adminGui = new AdminReportGuiService(this, database, moderation);
