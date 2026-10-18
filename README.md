@@ -151,7 +151,7 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 ## Alle Tobias30 MidniteSMP plugins
 
-- Claims: _[Paper 1.5.5](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.5)_
+- Claims: _[Paper 1.5.6](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.6)_
 - Claims Client Mod: _[1.31.6](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.6)_
 - Reports: _[1.2.36](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.36)_
 - GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_
