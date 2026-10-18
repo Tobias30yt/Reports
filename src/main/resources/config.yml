@@ -15,6 +15,7 @@ reports:
   page-size: 45
   update-checker:
     enabled: true
+    auto-install: true
   waiting-game:
     enabled: true
     combat-tag-seconds: 15

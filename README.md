@@ -13,7 +13,7 @@ Reports is a staff and player-support plugin for **Paper 26.3** and **Java 25**.
 - **Snake mini-game:** Players can start `/snake` or use the clickable chat link after making a report. Control it with the GUI arrow buttons; the snake advances once per second.
 - **Snake leaderboard:** Reports saves each player's best score in its SQLite database and displays the top ten in-game with `/snake top` (or `/snake leaderboard`) and in Discord with `/snake`. Modded Snake scores are tied to a server-issued session and checked against elapsed play time.
 - **Claims staff tools:** The Discord staff menu can list protected chunks. `/claims view` shows a claimed chunk's green particle outline to a selected online Claims administrator, from the world floor to build height.
-- **Release update notices:** On startup and every 48 hours, Reports checks GitHub for a newer stable release. If one is available, the console and online operators receive the release page and direct JAR download links. Disable with `reports.update-checker.enabled: false`.
+- **Automatic release updates:** On startup and every 48 hours, Reports checks GitHub for a newer stable release and stages a validated JAR in Paper's configured plugin update directory. Paper installs it at the next server restart. Set `reports.update-checker.auto-install: false` to receive notices without downloading, or `reports.update-checker.enabled: false` to disable checks.
 - **Combat logging:** Optionally prevent starting Snake during a PvP tag and execute a configured console command if a tagged player disconnects.
 - **Paper attribute swapping:** On startup, Reports sets Paper's `unsupported-settings.update-equipment-on-player-actions` setting to `false` for vanilla-style attribute/cooldown swapping.
 - **Startup integrity check:** The build embeds a SHA-256 manifest of JAR entries and writes a matching copy to `moderation/integrity.sha256`. Reports disables itself if the JAR contents do not match its embedded manifest.
@@ -151,8 +151,8 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 ## Alle Tobias30 MidniteSMP plugins
 
-- Claims: _[Paper 1.5.6](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.6)_
+- Claims: _[Paper 1.5.7](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.7)_
 - Claims Client Mod: _[1.31.6](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.6)_
-- Reports: _[1.2.36](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.36)_
+- Reports: _[1.2.37](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.37)_
 - GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_
-- EndUpdate: _[1.0.1](https://github.com/Tobias30yt/EndUpdate/releases/tag/v1.0.1)_
+- EndUpdate: _[1.0.4](https://github.com/Tobias30yt/EndUpdate/releases/tag/v1.0.4)_
