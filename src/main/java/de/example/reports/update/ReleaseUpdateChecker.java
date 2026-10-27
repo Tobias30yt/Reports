@@ -44,7 +44,6 @@ public final class ReleaseUpdateChecker {
 
     public ReleaseUpdateChecker(JavaPlugin plugin) { this.plugin = plugin; }
     public void start() {
-        if (!plugin.getConfig().getBoolean("reports.update-checker.enabled", true)) return;
         Bukkit.getAsyncScheduler().runNow(plugin, task -> check());
         periodic = Bukkit.getAsyncScheduler().runAtFixedRate(plugin, task -> check(), 48, 48, TimeUnit.HOURS);
     }
@@ -67,14 +66,8 @@ public final class ReleaseUpdateChecker {
             if (behind == 0) return;
             Asset asset = findAsset(latestRelease, latest);
             String download = asset.url();
-            String release = "https://github.com/Tobias30yt/Reports/releases/tag/" + latest;
-            if (plugin.getConfig().getBoolean("reports.update-checker.auto-install", true)) {
-                stageUpdate(download, asset.digest(), latest);
-                notifyStaff("Reports " + latest + " downloaded and staged. Paper will install it on the next server restart.");
-            } else {
-                notifyStaff("Reports update available: you are " + behind + " release" + (behind == 1 ? "" : "s")
-                        + " behind (installed " + installed + ", latest " + latest + "). Download: " + release);
-            }
+            stageUpdate(download, asset.digest(), latest);
+            notifyStaff("Reports " + latest + " downloaded and staged. Paper will install it on the next server restart.");
         } catch (Exception e) {
             plugin.getLogger().warning("Could not check or stage Reports updates: " + e.getMessage());
         }
