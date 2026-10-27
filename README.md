@@ -160,4 +160,12 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 ## Reports 1.3.0
 
+### Color formatting
+
+Reports chat messages, GUI item names/lore, ban disconnect screens and mute/timeout feedback support both legacy codes (`&c`, `§c`, `&l`, `&r`, `&#12abef`, `&x&1&2&a&b&e&f`) and MiniMessage colors (`<red>`, `<#12abef>`, `<gradient:red:gold>`) and decorations (`<bold>`). Both syntaxes can be mixed. Ban kicks use the same formatted message when a ban is applied and when a banned player reconnects. The selected player language and remaining duration are preserved.
+
+Example reason: `&cSpam <gold>after warning</gold>`. Legacy color codes reset preceding decorations; MiniMessage follows its normal nesting rules. Only color and formatting tags are interpreted: click commands, URLs and other interactive tags are not enabled. This changes Reports' own moderation displays; it does not override another plugin's `/kick` or Discord's native timeout interface.
+
+Regression checks run automatically during `mvn test` and `mvn package`.
+
 Tidalwave API-Synchronisierung, Sprachwahl mit /language und Mute-Anzeige mit Grund und Restzeit. Einrichtung und Tests: [REPORTS_API.md](REPORTS_API.md).

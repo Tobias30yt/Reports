@@ -100,6 +100,15 @@
               <classpathScope>runtime</classpathScope>
             </configuration>
           </execution>
+          <execution>
+            <id>check-color-formatting</id>
+            <phase>test</phase>
+            <goals><goal>java</goal></goals>
+            <configuration>
+              <mainClass>de.example.reports.util.ColorTextChecks</mainClass>
+              <classpathScope>test</classpathScope>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
