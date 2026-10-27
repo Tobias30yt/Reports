@@ -1,0 +1,5 @@
+# Download a configured private copy from the TidalWave administrator API panel.
+# Never publish the configured file or embed the credential in a JAR.
+enabled: false
+endpoint: 'https://tidlawaveenterprises.duckdns.org/api/reports/v1/events'
+key: ''

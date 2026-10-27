@@ -2,3 +2,6 @@
 target/
 .idea/
 *.iml
+
+/api.yml
+/plugins/

@@ -103,7 +103,7 @@ public final class GrimHook implements Listener {
                         if (count == 31) {
                             Bukkit.getScheduler().runTask(plugin, () -> plugin.getServer().getOnlinePlayers().stream()
                                     .filter(player -> player.hasPermission("tdw.ping"))
-                                    .forEach(player -> player.sendMessage("§c[Reports] §f" + playerName
+                                    .forEach(player -> de.example.reports.language.Language.send(player,"§c[Reports] §f" + playerName
                                             + " hat GrimAC-Flag §e" + checkName + " §fzum 31. Mal erhalten.")));
                             plugin.getLogger().warning(playerName + " reached 31 GrimAC flags for " + checkName + ".");
                             thresholdAlert.accept(playerName, checkName);

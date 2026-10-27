@@ -1,0 +1,110 @@
+# English<TAB>Deutsch. Fixed UI phrases only; dynamic names/reasons are not source strings.
+You do not have permission.	Dafür hast du keine Berechtigung.
+Reports – Management	Reports – Verwaltung
+Reported player: 	Gemeldeter Spieler: 
+Reported by: 	Gemeldet von: 
+Click for details	Klicken für Details
+Click to change	Klicken zum Wechseln
+ entries on this page	 Einträge auf dieser Seite
+Temporary ban	Temporär bannen
+Permanent ban	Permanent bannen
+Temporary mute	Temporär muten
+Permanent mute	Permanent muten
+Left click: ban	Linksklick: bannen
+Left click: mute	Linksklick: muten
+Right click: change duration	Rechtsklick: Dauer ändern
+Immediate kick	Sofortiger Kick
+Pardon sanctions	Sanktionen aufheben
+Remove ban and mute	Ban und Mute entfernen
+Set status	Status setzen
+Back to overview	Zur Übersicht
+Not available	Nicht verfügbar
+In review	In Bearbeitung
+Resolved	Gelöst
+Rejected	Abgelehnt
+Open	Offen
+Close	Schließen
+Previous page	Vorherige Seite
+Next page	Nächste Seite
+Previous	Zurück
+Next	Weiter
+Page 	Seite 
+All	Alle
+From: 	Von: 
+Time: 	Zeit: 
+Duration: 	Dauer: 
+Reason	Grund
+ days	 Tage
+ hours	 Stunden
+ minutes	 Minuten
+Report a Player	Spieler melden
+Search all known players	Alle bekannten Spieler suchen
+Search	Suchen
+Query: 	Suche: 
+Last seen: 	Zuletzt gesehen: 
+Search players	Spieler suchen
+Report reason	Report-Grund
+No flags available (player offline).	Keine Flags verfügbar (Spieler offline).
+GrimAC is not installed.	GrimAC ist nicht installiert.
+Your report against 	Dein Report gegen 
+ has been created. ID: 	 wurde erstellt. ID: 
+No known player was found.	Kein bekannter Spieler wurde gefunden.
+The report reason cannot be empty.	Der Report-Grund darf nicht leer sein.
+The reason is too long (maximum 	Der Grund ist zu lang (maximal 
+ characters).	 Zeichen).
+Discord is disabled or not configured.	Discord ist deaktiviert oder nicht konfiguriert.
+Your report will be reviewed by a team member soon. Enjoy Snake!	Dein Report wird bald von einem Teammitglied bearbeitet. Viel Spaß bei Snake!
+You cannot start Snake during combat.	Du kannst Snake nicht während eines Kampfes starten.
+[Start Snake]	[Snake starten]
+Click to open Snake	Klicken, um Snake zu öffnen
+Snake - click the arrows	Snake - Pfeile anklicken
+Snake leaderboard — personal bests	Snake-Bestenliste — persönliche Rekorde
+No scores yet. Play with /snake!	Noch keine Punkte. Spiele mit /snake!
+Snake Leaderboard	Snake-Bestenliste
+Only players can play Snake.	Nur Spieler können Snake spielen.
+This command is player-only.	Dieser Befehl ist nur für Spieler.
+Reports configuration reloaded.	Reports-Konfiguration neu geladen.
+Usage: 	Benutzung: 
+<player>	<spieler>
+<e.g. 1h, 7d>	<z.B. 1h, 7d>
+[reason]	[grund]
+This player is unknown.	Dieser Spieler ist nicht bekannt.
+Invalid duration. Use 30m, 12h or 7d.	Ungültige Dauer. Nutze z. B. 30m, 12h oder 7d.
+Player unknown. The player must have joined the server at least once.	Spieler nicht bekannt. Der Spieler muss dem Server mindestens einmal beigetreten sein.
+Could not load GrimAC flags.	Die GrimAC-Flags konnten nicht geladen werden.
+Could not delete saved GrimAC flags.	Die gespeicherten GrimAC-Flags konnten nicht gelöscht werden.
+GrimAC flags for 	GrimAC-Flags für 
+ (latest 50):	 (neueste 50):
+ saved GrimAC flags for 	 gespeicherte GrimAC-Flags von 
+ were deleted.	 wurden gelöscht.
+No saved GrimAC flags.	Keine gespeicherten GrimAC-Flags vorhanden.
+GrimAC is not installed; only saved flags can be shown.	GrimAC ist nicht installiert; es können nur gespeicherte Flags angezeigt werden.
+ not found.	 wurde nicht gefunden.
+Report not found.	Report nicht gefunden.
+ reported by 	 gemeldet von 
+ updated to 	 aktualisiert auf 
+/reports opens management, 	/reports öffnet die Verwaltung, 
+Your report is pending. Enjoy Snake while you wait!	Dein Report wartet. Spiele in der Zwischenzeit Snake!
+No Snake scores yet — play /snake	Noch keine Snake-Punkte — spiele /snake
+You win!	Du gewinnst!
+Game over	Spiel vorbei
+Final score: 	Endpunktzahl: 
+Play again	Erneut spielen
+Exit game	Spiel verlassen
+End game	Spiel beenden
+Food	Futter
+Score: 	Punkte: 
+Click an arrow to start	Pfeiltaste anklicken, um zu starten
+Up	Hoch
+Down	Runter
+Left	Links
+Right	Rechts
+No flags have been saved since recording was enabled.	Keine seit Aktivierung der Aufzeichnung gespeicherten Flags.
+GrimAC flag recording is unavailable.	GrimAC-Flag-Aufzeichnung ist nicht verfügbar.
+GrimAC itself was not reset.	GrimAC selbst wurde nicht zurückgesetzt.
+ downloaded and staged. Paper will install it on the next server restart.	 heruntergeladen und vorbereitet. Paper installiert es beim nächsten Serverneustart.
+Reports update available: you are 	Reports-Update verfügbar: Du bist 
+ behind (installed 	 zurück (installiert 
+, latest 	, neueste 
+
+All Players	Alle Spieler

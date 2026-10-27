@@ -108,7 +108,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
                             .hoverEvent(HoverEvent.showText(Component.text("Klicken, um Snake zu öffnen")))
             );
         }
-        player.sendMessage(chatMessage);
+        de.example.reports.language.Language.send(player,chatMessage);
     }
 
     public void open(Player player) {
@@ -121,7 +121,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
                     "reports.waiting-game.messages.combat-blocked",
                     "<red>You cannot start Snake during combat.</red>"
             );
-            player.sendMessage(MiniMessage.miniMessage().deserialize(message));
+            de.example.reports.language.Language.send(player,MiniMessage.miniMessage().deserialize(message));
             return;
         }
 
@@ -143,7 +143,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
         Inventory inventory = Bukkit.createInventory(
                 holder,
                 54,
-                Component.text("Snake - Pfeile anklicken")
+                Component.text(de.example.reports.language.Language.text(player,"Snake - Pfeile anklicken"))
         );
         holder.inventory(inventory);
         game.inventory = inventory;
@@ -155,7 +155,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
                 1,
                 1
         );
-        player.openInventory(inventory);
+        de.example.reports.language.Language.inventory(player,inventory);player.openInventory(inventory);
     }
 
     public void shutdown() {
@@ -183,7 +183,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
         game.step();
         if (game.gameOver && !game.scoreReported) { game.scoreReported=true; recordScore(player, game.score); }
         if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof SnakeInventory) {
-            draw(player.getOpenInventory().getTopInventory(), game);
+            draw(player.getOpenInventory().getTopInventory(), game);de.example.reports.language.Language.inventory(player,player.getOpenInventory().getTopInventory());
         }
     }
 
@@ -216,18 +216,18 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
             return;
         }
         List<ScoreEntry> top=leaderboard.values().stream().sorted(Comparator.comparingInt(ScoreEntry::score).reversed().thenComparing(ScoreEntry::name,String.CASE_INSENSITIVE_ORDER)).limit(10).toList();
-        sender.sendMessage(Component.text("Snake leaderboard — personal bests",NamedTextColor.GOLD));
-        if(top.isEmpty()){sender.sendMessage(Component.text("No scores yet. Play with /snake!",NamedTextColor.GRAY));return;}
+        de.example.reports.language.Language.send(sender,Component.text("Snake leaderboard — personal bests",NamedTextColor.GOLD));
+        if(top.isEmpty()){de.example.reports.language.Language.send(sender,Component.text("No scores yet. Play with /snake!",NamedTextColor.GRAY));return;}
         for(int i=0;i<top.size();i++) {
             ScoreEntry entry=top.get(i);
-            sender.sendMessage(Component.text((i+1)+". ",NamedTextColor.YELLOW).append(Component.text(entry.name(),NamedTextColor.WHITE)).append(Component.text(" — "+entry.score(),NamedTextColor.GREEN)));
+            de.example.reports.language.Language.send(sender,Component.text((i+1)+". ",NamedTextColor.YELLOW).append(Component.text(entry.name(),NamedTextColor.WHITE)).append(Component.text(" — "+entry.score(),NamedTextColor.GREEN)));
         }
     }
 
     private void openLeaderboard(Player player, List<ScoreEntry> scores) {
         player.getScheduler().run(plugin, task -> {
             SnakeLeaderboardInventory holder = new SnakeLeaderboardInventory();
-            Inventory inventory = Bukkit.createInventory(holder, 27, Component.text("Snake Leaderboard", NamedTextColor.GOLD));
+            Inventory inventory = Bukkit.createInventory(holder, 27, Component.text(de.example.reports.language.Language.text(player,"Snake Leaderboard"), NamedTextColor.GOLD));
             holder.inventory(inventory);
             for (int slot=0; slot<inventory.getSize(); slot++) inventory.setItem(slot, item(Material.BLACK_STAINED_GLASS_PANE, " "));
             if (scores.isEmpty()) inventory.setItem(13, item(Material.PAPER, "No Snake scores yet — play /snake"));
@@ -237,7 +237,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
                 ItemStack row = item(icon, (i + 1) + ". " + entry.name() + " — " + entry.score());
                 inventory.setItem(10 + i, row);
             }
-            player.openInventory(inventory);
+            de.example.reports.language.Language.inventory(player,inventory);player.openInventory(inventory);
         }, null);
     }
 
@@ -299,7 +299,7 @@ public final class SnakeGameService implements Listener, PluginMessageListener {
             case 49 -> {
                 if (game.gameOver) {
                     game.reset();
-                    draw(game.inventory, game);
+                    draw(game.inventory, game);de.example.reports.language.Language.inventory(player,game.inventory);
                 } else {
                     game.turn(0, 1);
                 }

@@ -27,7 +27,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 public final class ReportsPlugin extends JavaPlugin {
-    private Database database;
+    private Database database; private de.example.reports.api.ReportsSync apiSync; private de.example.reports.language.Language languages;
     private PluginSettings settings;
     private Messages messages;
     private DiscordService discord;
@@ -61,6 +61,7 @@ public final class ReportsPlugin extends JavaPlugin {
             return;
         }
 
+        languages = new de.example.reports.language.Language(this); apiSync = new de.example.reports.api.ReportsSync(this, database);
         GrimHook grim = new GrimHook(this, database);
         getLogger().info("GrimAC " + (grim.available() ? "detected" : "not detected") + ".");
         SignInput sign = new SignInput(this);
@@ -122,6 +123,7 @@ public final class ReportsPlugin extends JavaPlugin {
         if (discord != null) {
             discord.shutdown();
         }
+        if(apiSync!=null)apiSync.close();
         if (database != null) {
             database.close();
         }

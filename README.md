@@ -153,6 +153,11 @@ Installing the optional [Claims Client Fabric mod](https://github.com/Tobias30yt
 
 - Claims: _[Paper 1.5.7](https://github.com/Tobias30yt/Claims/releases/tag/paper-1.5.7)_
 - Claims Client Mod: _[1.31.6](https://github.com/Tobias30yt/Claims-Client/releases/tag/v1.31.6)_
-- Reports: _[1.2.37](https://github.com/Tobias30yt/Reports/releases/tag/v1.2.37)_
+- Reports: _[1.3.0](https://github.com/Tobias30yt/Reports/releases/tag/v1.3.0)_
 - GrimAC: _[Modrinth](https://modrinth.com/plugin/grimac)_
 - EndUpdate: _[1.0.4](https://github.com/Tobias30yt/EndUpdate/releases/tag/v1.0.4)_
+
+
+## Reports 1.3.0
+
+Tidalwave API-Synchronisierung, Sprachwahl mit /language und Mute-Anzeige mit Grund und Restzeit. Einrichtung und Tests: [REPORTS_API.md](REPORTS_API.md).

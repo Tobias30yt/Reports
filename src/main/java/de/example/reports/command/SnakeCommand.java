@@ -20,7 +20,7 @@ public final class SnakeCommand implements CommandExecutor {
             return true;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can play Snake.");
+            de.example.reports.language.Language.send(sender,"Only players can play Snake.");
             return true;
         }
         snake.open(player);

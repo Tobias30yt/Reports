@@ -182,7 +182,7 @@ public final class ReleaseUpdateChecker {
         Bukkit.getGlobalRegionScheduler().run(plugin, task -> {
             plugin.getLogger().warning(message);
             for (Player player : new ArrayList<>(Bukkit.getOnlinePlayers())) if (player.isOp())
-                player.getScheduler().run(plugin, playerTask -> player.sendMessage(message), null);
+                player.getScheduler().run(plugin, playerTask -> de.example.reports.language.Language.send(player,message), null);
         });
     }
 

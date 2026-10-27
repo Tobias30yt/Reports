@@ -34,11 +34,11 @@ public final class FlagsCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("reports.flags")) {
-            sender.sendMessage("§cDafür hast du keine Berechtigung.");
+            de.example.reports.language.Language.send(sender,"§cDafür hast du keine Berechtigung.");
             return true;
         }
         if (args.length != 2 || !(args[0].equalsIgnoreCase("see") || args[0].equalsIgnoreCase("remove"))) {
-            sender.sendMessage("§cBenutzung: /flags <see|remove> <spieler>");
+            de.example.reports.language.Language.send(sender,"§cBenutzung: /flags <see|remove> <spieler>");
             return true;
         }
 
@@ -46,7 +46,7 @@ public final class FlagsCommand implements CommandExecutor, TabCompleter {
         database.playerByName(args[1]).thenAccept(found ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
                     if (found.isEmpty()) {
-                        sender.sendMessage("§cSpieler nicht bekannt. Der Spieler muss dem Server mindestens einmal beigetreten sein.");
+                        de.example.reports.language.Language.send(sender,"§cSpieler nicht bekannt. Der Spieler muss dem Server mindestens einmal beigetreten sein.");
                         return;
                     }
                     var target = found.get();
@@ -59,7 +59,7 @@ public final class FlagsCommand implements CommandExecutor, TabCompleter {
                 })
         ).exceptionally(error -> {
             plugin.getLogger().severe("Could not look up GrimAC flags: " + error.getMessage());
-            sender.sendMessage("§cDie GrimAC-Flags konnten nicht geladen werden.");
+            de.example.reports.language.Language.send(sender,"§cDie GrimAC-Flags konnten nicht geladen werden.");
             return null;
         });
         return true;
@@ -68,21 +68,21 @@ public final class FlagsCommand implements CommandExecutor, TabCompleter {
     private void show(CommandSender sender, java.util.UUID playerUuid, String playerName) {
         database.grimFlags(playerUuid, 50).thenAccept(flags ->
                 plugin.getServer().getScheduler().runTask(plugin, () -> {
-                    sender.sendMessage("§6GrimAC-Flags für §e" + playerName + "§6 (neueste 50):");
+                    de.example.reports.language.Language.send(sender,"§6GrimAC-Flags für §e" + playerName + "§6 (neueste 50):");
                     if (flags.isEmpty()) {
-                        sender.sendMessage(grim.available()
+                        de.example.reports.language.Language.send(sender,grim.available()
                                 ? "§7Keine seit Aktivierung der Aufzeichnung gespeicherten Flags."
                                 : "§cGrimAC-Flag-Aufzeichnung ist nicht verfügbar.");
                         return;
                     }
                     for (GrimFlag flag : flags) {
-                        sender.sendMessage("§8[" + TIMESTAMP.format(flag.timestamp()) + "] §c"
+                        de.example.reports.language.Language.send(sender,"§8[" + TIMESTAMP.format(flag.timestamp()) + "] §c"
                                 + flag.checkName() + " §7" + flag.details());
                     }
                 })
         ).exceptionally(error -> {
             plugin.getLogger().severe("Could not load GrimAC flags for " + playerName + ": " + error.getMessage());
-            sender.sendMessage("§cDie GrimAC-Flags konnten nicht geladen werden.");
+            de.example.reports.language.Language.send(sender,"§cDie GrimAC-Flags konnten nicht geladen werden.");
             return null;
         });
     }
@@ -90,12 +90,12 @@ public final class FlagsCommand implements CommandExecutor, TabCompleter {
     private void remove(CommandSender sender, java.util.UUID playerUuid, String playerName) {
         database.removeGrimFlags(playerUuid).thenAccept(removed ->
                 plugin.getServer().getScheduler().runTask(plugin, () ->
-                        sender.sendMessage("§a" + removed + " gespeicherte GrimAC-Flags von "
+                        de.example.reports.language.Language.send(sender,"§a" + removed + " gespeicherte GrimAC-Flags von "
                                 + playerName + " wurden gelöscht. GrimAC selbst wurde nicht zurückgesetzt.")
                 )
         ).exceptionally(error -> {
             plugin.getLogger().severe("Could not remove GrimAC flags for " + playerName + ": " + error.getMessage());
-            sender.sendMessage("§cDie gespeicherten GrimAC-Flags konnten nicht gelöscht werden.");
+            de.example.reports.language.Language.send(sender,"§cDie gespeicherten GrimAC-Flags konnten nicht gelöscht werden.");
             return null;
         });
     }

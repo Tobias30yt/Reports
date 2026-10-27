@@ -1,10 +1,11 @@
 name: Reports
-version: 1.2.37
+version: 1.3.0
 main: de.example.reports.ReportsPlugin
 api-version: '26.3'
 author: Tobias30
-softdepend: [GrimAC, Claims]
+softdepend: [GrimAC, Claims, LuckPerms]
 commands:
+  language: {description: Choose English or German, usage: /language}
   report:
     description: Report a player
     permission: reports.create
@@ -23,6 +24,8 @@ commands:
   tempmute: {description: Temporarily mute a player, permission: reports.tempmute}
   unban: {description: Remove a player's Reports sanctions, permission: reports.unban}
 permissions:
+  language.englisch: {default: false}
+  language.german: {default: false}
   reports.create: {default: true}
   reports.view: {default: op}
   reports.manage: {default: op}
